@@ -51,7 +51,7 @@ namespace CvsArduino
 
 
                 //Play track (debugging)
-                const float noteMultiplier = 0.5f;
+                const float noteMultiplier = 1f;
                 const int delayMultiplier = 1;
 
                 int time = 0;
@@ -67,10 +67,11 @@ namespace CvsArduino
                     else
                     {
                         time++;
-                        if (j%delayMultiplier == 0)
+                        if (time % delayMultiplier == 0)
                             Thread.Sleep(1);
                     }
                 }
+
             }
             else //No file
             {
