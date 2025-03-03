@@ -42,7 +42,7 @@ namespace CvsArduino
                             int noteStart = value[0];
                             int channel = value[1];
 
-                            if (noteSequences.Count - 1 < channel)
+                            while (noteSequences.Count - 1 < channel)
                                 noteSequences.Add(new NoteSequence());
 
                             noteSequences[channel].notes.Add(note);
