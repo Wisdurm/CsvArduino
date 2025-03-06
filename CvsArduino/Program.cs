@@ -1,21 +1,37 @@
-﻿using System.Collections;
-
-namespace CvsArduino
+﻿namespace CvsArduino
 {
-    struct NoteSequence ()
+    struct NoteSequence()
     {
-        public List<int> notes = [];
+        public List<int> notes = []; //This could be byte but it doesn't really matter. It can be easily converted on the program that actually uses this
         public List<int> noteStarts = [];
         public List<int> noteLengths = [];
     }
     internal class Program
     {
+        static bool compressNotes; //Divides note lengths by 10, and hopes that they fit under 255. Playback can then multiply the lengths, although losing some resolution
+
         static void Main(string[] args)
         {
             if (args.Length > 0)
             {
                 string[] file = File.ReadAllLines(args[0]);
 
+                Console.WriteLine("Compress notes? Y/N");
+                while (true)
+                {
+                    ConsoleKey answer = Console.ReadKey(true).Key;
+                    if (answer == ConsoleKey.Y)
+                    {
+                        compressNotes = true;
+                        break;
+                    }
+                    else if (answer == ConsoleKey.N)
+                    {
+                        compressNotes = false;
+                        break;
+                    }
+                    Console.Beep();
+                }
                 //Parse
                 List<NoteSequence> noteSequences = [];
                 NoteSequence combined = new();
@@ -33,7 +49,7 @@ namespace CvsArduino
                     {
                         if (parse[2] == " Note_on_c" && parse[5] != " 0") //Start note
                         {
-                            ongoingNotes.Add(parse[4], [ Convert.ToInt32(parse[1]), ongoingNotes.Count]); //Keep track of started notes (key = note, value = startTime and "channel")
+                            ongoingNotes.Add(parse[4], [Convert.ToInt32(parse[1]), ongoingNotes.Count]); //Keep track of started notes (key = note, value = startTime and "channel")
                         }
                         else //Stop note
                         {
@@ -48,10 +64,14 @@ namespace CvsArduino
                             noteSequences[channel].notes.Add(note);
                             noteSequences[channel].noteStarts.Add(noteStart);
                             noteSequences[channel].noteLengths.Add(Convert.ToInt32(parse[1]) - noteStart); //End - start
+                            if (compressNotes)
+                                noteSequences[channel].noteLengths[noteSequences[channel].noteLengths.Count() - 1] /= 10;
 
                             combined.notes.Add(note);
                             combined.noteStarts.Add(noteStart);
                             combined.noteLengths.Add(Convert.ToInt32(parse[1]) - noteStart);
+                            if (compressNotes)
+                                combined.noteLengths[combined.noteLengths.Count - 1] /= 10;
                         }
                     }
                 }
@@ -72,7 +92,8 @@ namespace CvsArduino
                 //const float noteMultiplier = 1f;
                 //const int delayMultiplier = 1;
 
-                //Not only is it impossible to play multiple notes at once using console.beep(), but I was also too lazy to make this 
+                //Not only is it impossible to play multiple notes at once using console.beep(),
+                //but I was also too lazy to fix this after changing some other things
 
                 //int time = 0;
                 //int j = 0;
